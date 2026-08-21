@@ -1,0 +1,12 @@
+Languages: Java, Python
+
+Machine Learning & Data: Machine Learning, Statistics, Exploratory Data
+Analysis (EDA), Data Visualization, Scikit-learn, Pandas, Plotly, Streamlit
+
+Backend & Databases: Spring Boot, REST APIs, MySQL, SQL, OOP, DBMS,
+Operating Systems
+
+Tools: React, Git, GitHub, Jupyter, Postman, Linux/Unix
+
+Competitive Programming: 350+ problems solved across LeetCode (330+) and
+Codeforces (20+), primarily in Java.

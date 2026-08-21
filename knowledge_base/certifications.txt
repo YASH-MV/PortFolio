@@ -1,0 +1,11 @@
+Machine Learning with Python — IBM (Cognitive Class)
+Hands-on machine learning course covering core ML algorithms, completed
+through IBM's Cognitive Class program.
+Certificate: https://courses.cognitiveclass.ai/certificates/44b9e1bf74ff465f8a586d8d3f361db9
+
+Data Analytics Job Simulation — Deloitte, June 2025
+Completed practical tasks in data analysis and forensic technology via
+Forage.
+
+Technology Job Simulation — Deloitte, June 2025
+Completed practical tasks in coding and software development via Forage.

@@ -1,0 +1,22 @@
+Name: Yash Raj
+Role: B.Tech CSE (AI & ML) Student, Class of 2027
+
+I'm a B.Tech student in Computer Science Engineering (AI & ML) at Techno Main
+Salt Lake, Kolkata, with strong analytical and problem-solving skills built
+through hands-on experience in Java, Python, SQL, data analysis, and machine
+learning. I like developing data-driven solutions — analyzing complex
+datasets and turning them into actionable outcomes using Pandas,
+Scikit-learn, Streamlit, and Plotly. I'm eager to apply technical,
+analytical, and problem-solving skills to solve real business problems in a
+consulting or software engineering environment.
+
+This portfolio is itself a proof of concept: everything you're reading here
+- resume, projects, skills - is chunked, embedded, and served through the
+retrieval-augmented chatbot below, so you can just ask it instead of
+scrolling.
+
+Location: Kolkata, India
+Email: yashraj64004@gmail.com
+GitHub: github.com/YASH-MV
+LinkedIn: linkedin.com/in/yash-raj-b8798a285
+Open to: internships and entry-level software / ML roles
