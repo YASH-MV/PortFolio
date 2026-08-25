@@ -1,17 +1,29 @@
 """
-api/chat.py — the "Portfolio Chatbot" box at the bottom of the diagram.
+backend/api/chat.py — Portfolio Chatbot Endpoint
 
-Exposes POST /api/chat, exactly matching what ChatWidget.jsx already sends:
+Exposes POST /api/chat, matching ChatWidget.jsx:
   request:  { "question": "..." }
   response: { "answer": "...", "sources": ["resume.pdf", "projects.txt"] }
 """
 
 from __future__ import annotations
 
+import traceback
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from rag.pipeline import answer_question
+# Fallback import handling to support both local running and Vercel serverless execution
+try:
+    from backend.rag.pipeline import answer_question
+except ModuleNotFoundError:
+    try:
+        from rag.pipeline import answer_question
+    except ModuleNotFoundError:
+        import os
+        import sys
+
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        from backend.rag.pipeline import answer_question
 
 router = APIRouter()
 
@@ -22,22 +34,24 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    sources: list[str]
+    sources: list[str] = Field(default_factory=list)
 
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest) -> ChatResponse:
     question = payload.question.strip()
     if not question:
-        raise HTTPException(status_code=400, detail="question cannot be empty")
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
 
     try:
         result = answer_question(question)
-        return ChatResponse(**result)
+        return ChatResponse(
+            answer=result.get("answer", "No response generated."),
+            sources=result.get("sources", []),
+        )
     except RuntimeError as e:
-        # e.g. missing GEMINI_API_KEY
+        # Triggered if API key is missing or model configuration fails
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Failed to answer question: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to answer question: {str(e)}")
