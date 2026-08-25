@@ -21,9 +21,8 @@ load_dotenv(dotenv_path=env_path)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.chat import router as chat_router
-from rag.pipeline import build_index
-
+from backend.api.chat import router as chat_router
+from backend.rag.pipeline import build_index
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
