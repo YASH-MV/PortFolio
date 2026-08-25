@@ -1,19 +1,3 @@
-"""
-rag/pipeline.py — orchestrates the full flow from the architecture diagram:
-
-  Document Loader -> Chunking -> Embeddings -> Vector Database (FAISS)
-                                                        |
-  USER QUESTION -----------------------------------------
-                                                        v
-                                              RAG RETRIEVER
-                                                        |
-                                          Relevant information
-                                                        v
-                                                       LLM
-                                                        |
-                                                Final Answer
-"""
-
 from __future__ import annotations
 
 import os
@@ -24,7 +8,10 @@ from .chunker import chunk_documents
 from .loader import load_documents
 from .retriever import Retriever
 
+# Path resolution that works both locally and in Vercel serverless functions
 KNOWLEDGE_BASE_DIR = Path(__file__).resolve().parent.parent.parent / "knowledge_base"
+if not KNOWLEDGE_BASE_DIR.exists():
+    KNOWLEDGE_BASE_DIR = Path(__file__).resolve().parent.parent / "knowledge_base"
 
 _retriever: Retriever | None = None
 
@@ -37,8 +24,11 @@ def build_index(force_rebuild: bool = False) -> Retriever:
     global _retriever
 
     if not force_rebuild and Retriever.exists():
-        _retriever = Retriever.load()
-        return _retriever
+        try:
+            _retriever = Retriever.load()
+            return _retriever
+        except Exception:
+            pass
 
     documents = load_documents(KNOWLEDGE_BASE_DIR)
     chunks = chunk_documents(documents)
@@ -46,7 +36,11 @@ def build_index(force_rebuild: bool = False) -> Retriever:
 
     retriever = Retriever()
     retriever.build(chunks, vectors)
-    retriever.save()
+    try:
+        retriever.save()
+    except Exception:
+        # Silently continue if filesystem is read-only in serverless
+        pass
 
     _retriever = retriever
     return retriever
@@ -70,8 +64,11 @@ def answer_question(question: str, top_k: int | None = None) -> dict:
     query_vector = embeddings.embed_query(question)
     matches = retriever.search(query_vector, top_k=top_k)
 
-    # local import avoids a hard dependency for callers that only need retrieval
-    from llm.model import generate_answer
+    # Safe fallback import for local vs. Vercel deployment
+    try:
+        from backend.llm.model import generate_answer
+    except ModuleNotFoundError:
+        from llm.model import generate_answer
 
     answer = generate_answer(question, matches)
     sources = sorted({m["source"] for m in matches})

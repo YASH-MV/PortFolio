@@ -1,21 +1,19 @@
-"""
-rag/retriever.py — Vector Database (FAISS) + RAG Retriever stages.
-
-Wraps a FAISS flat L2 index plus a parallel metadata list (source filename
-and chunk text for each vector). Persists both to disk under
-backend/rag/storage/ so the index only needs to be rebuilt when your
-knowledge_base/ files change, not on every server restart.
-"""
-
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 
 import faiss
 import numpy as np
 
-STORAGE_DIR = Path(__file__).resolve().parent / "storage"
+# In Vercel serverless, use /tmp for disk persistence; locally use backend/rag/storage
+if os.environ.get("VERCEL"):
+    STORAGE_DIR = Path(tempfile.gettempdir()) / "rag_storage"
+else:
+    STORAGE_DIR = Path(__file__).resolve().parent / "storage"
+
 INDEX_PATH = STORAGE_DIR / "index.faiss"
 METADATA_PATH = STORAGE_DIR / "metadata.json"
 
@@ -24,9 +22,7 @@ class Retriever:
     def __init__(self, dim: int | None = None):
         self.dim = dim
         self.index: faiss.IndexFlatL2 | None = None
-        self.metadata: list[dict] = []  # parallel to index vectors
-
-    # ---- building ----------------------------------------------------
+        self.metadata: list[dict] = []
 
     def build(self, chunks: list[dict], vectors: list[list[float]]) -> None:
         if len(chunks) != len(vectors):
@@ -37,8 +33,6 @@ class Retriever:
         self.index = faiss.IndexFlatL2(self.dim)
         self.index.add(matrix)
         self.metadata = chunks
-
-    # ---- persistence ---------------------------------------------------
 
     def save(self) -> None:
         STORAGE_DIR.mkdir(parents=True, exist_ok=True)
@@ -59,8 +53,6 @@ class Retriever:
     @staticmethod
     def exists() -> bool:
         return INDEX_PATH.exists() and METADATA_PATH.exists()
-
-    # ---- search ---------------------------------------------------------
 
     def search(self, query_vector: list[float], top_k: int = 4) -> list[dict]:
         if self.index is None:
